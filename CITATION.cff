@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Farquhar"
+    given-names: "Hayden"
+    orcid: "https://orcid.org/0009-0002-6226-440X"
+title: "HIV Drug Resistance Prediction with ESM-2 Protein Language Model"
+version: 1.0.0
+date-released: 2026-01-26
+url: "https://github.com/hayden-farquhar/HIV-ESM-2"
+repository-code: "https://github.com/hayden-farquhar/HIV-ESM-2"
+license: MIT
+keywords:
+  - HIV drug resistance
+  - protein language models
+  - ESM-2
+  - antiretroviral therapy
+  - machine learning
+  - drug resistance mutations
+abstract: >-
+  A machine learning pipeline for predicting HIV drug resistance from
+  protein sequences using ESM-2 protein language model embeddings. The
+  attention-weighted pooling approach achieves 0.968 mean AUC across
+  18 antiretroviral drugs, with 2.48x enrichment for known drug resistance
+  mutations in high-attention positions.
