@@ -352,3 +352,53 @@ def batch_extract_pooled_embeddings(
         torch.cuda.empty_cache()
 
     return np.array(all_pooled)
+
+
+def batch_extract_per_residue_embeddings(
+    sequences: List[str],
+    model,
+    alphabet,
+    batch_converter,
+    device: torch.device,
+    batch_size: int = 8,
+    repr_layer: int = 33
+) -> List[np.ndarray]:
+    """
+    Extract per-residue embeddings (unpooled) for all sequences.
+    
+    Required for AttentionWeightedClassifier.
+    
+    Args:
+        sequences: List of sequences
+        model: ESM-2 model
+        alphabet: ESM alphabet
+        batch_converter: Batch converter
+        device: Torch device
+        batch_size: Inference batch size
+        repr_layer: Layer to extract
+        
+    Returns:
+        List of (seq_len, embed_dim) numpy arrays
+    """
+    all_embeddings = []
+
+    for i in tqdm(range(0, len(sequences), batch_size), desc="Extracting per-residue embeddings"):
+        batch_seqs = sequences[i:i + batch_size]
+        batch_data = [(f"seq_{j}", seq) for j, seq in enumerate(batch_seqs)]
+
+        _, _, batch_tokens = batch_converter(batch_data)
+        batch_tokens = batch_tokens.to(device)
+
+        with torch.no_grad():
+            results = model(batch_tokens, repr_layers=[repr_layer])
+
+        token_embeddings = results['representations'][repr_layer]
+
+        # Remove BOS/EOS tokens
+        for j, seq in enumerate(batch_seqs):
+            seq_emb = token_embeddings[j, 1:len(seq)+1, :].cpu().numpy()
+            all_embeddings.append(seq_emb)
+
+        torch.cuda.empty_cache()
+
+    return all_embeddings

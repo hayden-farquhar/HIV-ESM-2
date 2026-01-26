@@ -6,14 +6,48 @@ This module provides functions for:
 - Computing DRM enrichment in attention weights
 - Finding novel positions with high attention
 - SHAP value computation
+- Extracting learned attention weights
 """
 
 from typing import Dict, List, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
+import torch
 from scipy.stats import fisher_exact
 from tqdm import tqdm
+
+
+def extract_learned_attention(
+    embedding: np.ndarray,
+    model,
+    device: torch.device
+) -> np.ndarray:
+    """
+    Extract attention weights from the learned AttentionWeightedClassifier.
+
+    Args:
+        embedding: Per-residue embedding array (seq_len, embed_dim)
+        model: Trained AttentionWeightedClassifier
+        device: Torch device
+
+    Returns:
+        Attention weights array (seq_len,)
+    """
+    model.eval()
+    
+    # Prepare input
+    # (seq_len, dim) -> (1, seq_len, dim)
+    emb_tensor = torch.FloatTensor(embedding).unsqueeze(0).to(device)
+    
+    # Mask is all 1s for single sequence
+    mask = torch.ones(1, len(embedding)).to(device)
+    
+    with torch.no_grad():
+        _, weights = model(emb_tensor, mask)
+        
+    # (1, seq_len) -> (seq_len,)
+    return weights.cpu().numpy().flatten()
 
 
 # Drug Resistance Mutations (DRMs) from IAS-USA 2022 guidelines
@@ -271,6 +305,86 @@ def compute_attention_differential(
             susceptible_attention.append(pos_attn)
         except Exception as e:
             continue
+
+    if len(resistant_attention) == 0 or len(susceptible_attention) == 0:
+        return None
+
+    # Pad and average
+    max_len = max(
+        max(len(a) for a in resistant_attention),
+        max(len(a) for a in susceptible_attention)
+    )
+
+    def pad_and_average(attention_list):
+        padded = np.zeros((len(attention_list), max_len))
+        for i, a in enumerate(attention_list):
+            padded[i, :len(a)] = a
+        return np.mean(padded, axis=0)
+
+    resistant_avg = pad_and_average(resistant_attention)
+    susceptible_avg = pad_and_average(susceptible_attention)
+    differential = resistant_avg - susceptible_avg
+
+    return {
+        'resistant_avg': resistant_avg,
+        'susceptible_avg': susceptible_avg,
+        'differential': differential,
+        'n_resistant': len(resistant_attention),
+        'n_susceptible': len(susceptible_attention)
+    }
+
+
+def compute_learned_attention_differential(
+    embeddings: List[np.ndarray],
+    labels: np.ndarray,
+    model,
+    device: torch.device,
+    max_samples: int = 100,
+    random_state: int = 42
+) -> Dict:
+    """
+    Compute attention differential using the learned AttentionWeightedClassifier.
+    
+    Args:
+        embeddings: List of per-residue embeddings
+        labels: Binary labels
+        model: Trained AttentionWeightedClassifier
+        device: Torch device
+        max_samples: Max samples per class
+        random_state: Random seed
+        
+    Returns:
+        Dictionary with differential analysis
+    """
+    np.random.seed(random_state)
+
+    resistant_idx = np.where(labels == 1)[0]
+    susceptible_idx = np.where(labels == 0)[0]
+
+    # Sample for efficiency
+    n_resistant = min(max_samples, len(resistant_idx))
+    n_susceptible = min(max_samples, len(susceptible_idx))
+
+    if n_resistant < 10 or n_susceptible < 10:
+        return None
+
+    sample_resistant = np.random.choice(resistant_idx, n_resistant, replace=False)
+    sample_susceptible = np.random.choice(susceptible_idx, n_susceptible, replace=False)
+
+    resistant_attention = []
+    susceptible_attention = []
+    
+    model.eval()
+
+    # Extract attention for resistant samples
+    for idx in tqdm(sample_resistant, desc="Resistant sequences (Learned)"):
+        weights = extract_learned_attention(embeddings[idx], model, device)
+        resistant_attention.append(weights)
+
+    # Extract attention for susceptible samples
+    for idx in tqdm(sample_susceptible, desc="Susceptible sequences (Learned)"):
+        weights = extract_learned_attention(embeddings[idx], model, device)
+        susceptible_attention.append(weights)
 
     if len(resistant_attention) == 0 or len(susceptible_attention) == 0:
         return None
