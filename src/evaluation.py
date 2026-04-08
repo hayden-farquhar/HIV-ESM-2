@@ -134,7 +134,8 @@ def delong_test(
     """
     DeLong test for comparing two AUC values.
 
-    Tests whether two ROC curves are significantly different.
+    Uses the nonparametric placement value approach (DeLong et al., 1988)
+    to test whether two ROC curves are significantly different.
 
     Args:
         y_true: True labels
@@ -144,26 +145,56 @@ def delong_test(
     Returns:
         Tuple of (z_statistic, p_value)
     """
-    auc1 = roc_auc_score(y_true, y_pred1)
-    auc2 = roc_auc_score(y_true, y_pred2)
+    y_true = np.asarray(y_true)
+    y_pred1 = np.asarray(y_pred1).flatten()
+    y_pred2 = np.asarray(y_pred2).flatten()
 
-    n1 = np.sum(y_true == 1)
-    n0 = np.sum(y_true == 0)
+    pos = y_pred1[y_true == 1], y_pred2[y_true == 1]
+    neg = y_pred1[y_true == 0], y_pred2[y_true == 0]
+    m = len(pos[0])  # number of positives
+    n = len(neg[0])  # number of negatives
 
-    # Compute variances using Hanley-McNeil approximation
-    q1 = auc1 / (2 - auc1)
-    q2 = auc1**2 / (1 + auc1)
-    var1 = (auc1 * (1 - auc1) + (n1 - 1) * (q1 - auc1**2) + (n0 - 1) * (q2 - auc1**2)) / (n0 * n1)
+    # Placement values for each model
+    def _placement(pos_scores, neg_scores):
+        """Compute placement values: fraction of negatives below each positive."""
+        return np.array([
+            np.mean(pos_s > neg_scores) + 0.5 * np.mean(pos_s == neg_scores)
+            for pos_s in pos_scores
+        ])
 
-    q1 = auc2 / (2 - auc2)
-    q2 = auc2**2 / (1 + auc2)
-    var2 = (auc2 * (1 - auc2) + (n1 - 1) * (q1 - auc2**2) + (n0 - 1) * (q2 - auc2**2)) / (n0 * n1)
+    def _placement_neg(pos_scores, neg_scores):
+        """Compute placement values: fraction of positives above each negative."""
+        return np.array([
+            np.mean(pos_scores > neg_s) + 0.5 * np.mean(pos_scores == neg_s)
+            for neg_s in neg_scores
+        ])
 
-    # Compute correlation (simplified)
-    cov = min(var1, var2) * 0.5
+    # Placement values for positives
+    v10 = _placement(pos[0], neg[0])  # model 1
+    v20 = _placement(pos[1], neg[1])  # model 2
 
-    se = np.sqrt(var1 + var2 - 2 * cov)
-    z = (auc1 - auc2) / se if se > 0 else 0
+    # Placement values for negatives
+    v01 = _placement_neg(pos[0], neg[0])
+    v02 = _placement_neg(pos[1], neg[1])
+
+    # AUCs
+    auc1 = np.mean(v10)
+    auc2 = np.mean(v20)
+
+    # Covariance matrix of (AUC1, AUC2)
+    sx = np.cov(np.column_stack([v10, v20]).T)  # (2,2) covariance among positives
+    sy = np.cov(np.column_stack([v01, v02]).T)  # (2,2) covariance among negatives
+
+    S = sx / m + sy / n  # combined covariance
+
+    # Contrast: AUC1 - AUC2
+    diff = auc1 - auc2
+    var_diff = S[0, 0] + S[1, 1] - 2 * S[0, 1]
+
+    if var_diff <= 0:
+        return 0.0, 1.0
+
+    z = diff / np.sqrt(var_diff)
     p_value = 2 * (1 - stats.norm.cdf(abs(z)))
 
     return z, p_value
