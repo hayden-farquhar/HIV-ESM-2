@@ -5,7 +5,9 @@ This module extends the ESM-2 pipeline to support additional PLMs:
 - ESM C (Cambrian) 600M: Meta's recommended ESM-2 successor for embeddings
 - ESM-1v: Zero-shot variant-effect scoring for mutation impact prediction
 
-Required for revision W6 (comparison with SOTA protein language models).
+To assess robustness to PLM backbone choice, this module provides a
+unified comparison pipeline that extracts embeddings from each model
+and trains identical classifiers for fair evaluation.
 
 Installation:
     ESM C:  pip install esm  (EvolutionaryScale package, >=3.0)

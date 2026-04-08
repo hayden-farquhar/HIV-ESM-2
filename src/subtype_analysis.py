@@ -7,7 +7,8 @@ This module provides functions for:
 - Running subtype-stratified performance analysis
 - Temporal holdout split for quasi-independent validation
 
-Required for revision W5 (single dataset / geographic and subtype bias).
+These analyses evaluate whether model performance is robust across
+HIV-1 subtypes and generalises to temporally distinct sequence sets.
 """
 
 from pathlib import Path
