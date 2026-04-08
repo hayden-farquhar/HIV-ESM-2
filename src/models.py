@@ -477,7 +477,7 @@ def per_drug_training(
                         v_emb = v_emb.to(device)
                         v_mask = v_mask.to(device)
                         logits, _ = model(v_emb, v_mask)
-                        probs = torch.sigmoid(logits).cpu().numpy()
+                        probs = torch.sigmoid(logits).cpu().numpy().flatten()
                         fold_preds.extend(probs)
                         
                 y_pred[val_idx] = fold_preds
