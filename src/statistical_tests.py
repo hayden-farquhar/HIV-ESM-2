@@ -1,6 +1,5 @@
 # ══════════════════════════════════════════════════════════════════════════════
-# Statistical significance tests for revised manuscript
-# Run this cell at the end of notebook 08 while all results are in memory
+# Statistical hypothesis testing for HIV drug resistance model comparisons
 # ══════════════════════════════════════════════════════════════════════════════
 
 from scipy import stats

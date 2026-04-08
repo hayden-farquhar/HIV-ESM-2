@@ -44,16 +44,21 @@ HIV-ESM-2/
 │   ├── data_processing.py        # HIVDB data parsing
 │   ├── feature_engineering.py    # ESM-2 embeddings, attention pooling
 │   ├── models.py                 # Classifiers (LogReg, XGBoost, etc.)
-│   ├── evaluation.py             # Metrics, CV, calibration
+│   ├── evaluation.py             # Metrics, CV, calibration, DeLong test
 │   ├── visualization.py          # Plotting utilities
-│   └── interpretability.py       # DRM enrichment, SHAP
+│   ├── interpretability.py       # DRM enrichment, SHAP
+│   ├── plm_comparison.py         # Multi-PLM embedding extraction
+│   ├── subtype_analysis.py       # Subtype assignment and stratified evaluation
+│   └── statistical_tests.py      # Statistical hypothesis testing
 ├── notebooks/
 │   ├── 01_data_acquisition.ipynb
 │   ├── 02_baseline_development.ipynb
 │   ├── 03_esm2_embedding_extraction.ipynb
 │   ├── 04_classification_evaluation.ipynb
 │   ├── 05_interpretability_analysis.ipynb
-│   └── 06_external_validation.ipynb
+│   ├── 06_external_validation.ipynb
+│   ├── 07_multi_plm_and_robustness.ipynb
+│   └── 08_figures_and_statistics.ipynb
 ├── data/
 │   └── README.md                 # Data access instructions
 ├── figures/
@@ -149,6 +154,12 @@ jupyter notebook notebooks/05_interpretability_analysis.ipynb
 
 # External validation
 jupyter notebook notebooks/06_external_validation.ipynb
+
+# Multi-PLM comparison and robustness analysis (requires GPU)
+jupyter notebook notebooks/07_multi_plm_and_robustness.ipynb
+
+# Figure generation and statistical testing
+jupyter notebook notebooks/08_figures_and_statistics.ipynb
 ```
 
 ## Notebooks Overview
@@ -161,6 +172,8 @@ jupyter notebook notebooks/06_external_validation.ipynb
 | 04 | Classifier comparison and evaluation |
 | 05 | DRM enrichment and interpretability analysis |
 | 06 | Holdout validation and calibration |
+| 07 | Multi-PLM comparison and subtype/temporal robustness |
+| 08 | Publication figure generation and statistical testing |
 
 ## Drug Coverage
 
