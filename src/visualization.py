@@ -20,14 +20,14 @@ from sklearn.metrics import roc_curve, precision_recall_curve
 # Set default style
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['figure.dpi'] = 100
-plt.rcParams['savefig.dpi'] = 300
-plt.rcParams['font.size'] = 11
+plt.rcParams['savefig.dpi'] = 400
+plt.rcParams['font.size'] = 13
 
 
 def plot_roc_curves(
     results: Dict,
     title: str = "ROC Curves by Drug",
-    figsize: Tuple[int, int] = (12, 10),
+    figsize: Tuple[int, int] = (16, 14),
     save_path: Optional[str] = None
 ) -> plt.Figure:
     """
@@ -68,7 +68,7 @@ def plot_roc_curves(
     for idx in range(n_drugs, len(axes)):
         axes[idx].set_visible(False)
 
-    fig.suptitle(title, fontsize=14, fontweight='bold')
+    fig.suptitle(title, fontsize=16, fontweight='bold')
     plt.tight_layout()
 
     if save_path:
@@ -81,7 +81,7 @@ def plot_drug_comparison(
     esm2_results: Dict,
     baseline_results: Dict,
     title: str = "ESM-2 vs Baseline AUC Comparison",
-    figsize: Tuple[int, int] = (14, 6),
+    figsize: Tuple[int, int] = (18, 8),
     save_path: Optional[str] = None
 ) -> plt.Figure:
     """
@@ -110,9 +110,9 @@ def plot_drug_comparison(
     bars1 = ax.bar(x - width/2, baseline_aucs, width, label='Baseline', color='#3498db', alpha=0.8)
     bars2 = ax.bar(x + width/2, esm2_aucs, width, label='ESM-2', color='#e74c3c', alpha=0.8)
 
-    ax.set_ylabel('AUC-ROC', fontsize=12)
-    ax.set_xlabel('Drug', fontsize=12)
-    ax.set_title(title, fontsize=14, fontweight='bold')
+    ax.set_ylabel('AUC-ROC', fontsize=14)
+    ax.set_xlabel('Drug', fontsize=14)
+    ax.set_title(title, fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     ax.set_xticklabels(drugs, rotation=45, ha='right')
     ax.legend()
@@ -145,7 +145,7 @@ def plot_attention_heatmap(
     seq_len: int,
     drug: str,
     drug_class: str,
-    figsize: Tuple[int, int] = (14, 4),
+    figsize: Tuple[int, int] = (18, 5),
     save_path: Optional[str] = None
 ) -> plt.Figure:
     """
@@ -178,10 +178,10 @@ def plot_attention_heatmap(
             ax.axvline(x=pos, color='green', alpha=0.3, linewidth=2, zorder=0)
 
     ax.axhline(y=0, color='black', linewidth=0.5)
-    ax.set_xlabel('Sequence Position', fontsize=11)
-    ax.set_ylabel('Attention Differential\n(Resistant - Susceptible)', fontsize=11)
+    ax.set_xlabel('Sequence Position', fontsize=13)
+    ax.set_ylabel('Attention Differential\n(Resistant - Susceptible)', fontsize=13)
     ax.set_title(f'{drug_class}/{drug}: ESM-2 Attention Profile\n(Green lines = known DRM positions)',
-                fontsize=12, fontweight='bold')
+                fontsize=14, fontweight='bold')
     ax.set_xlim(0, seq_len + 1)
 
     # Mark top 5 positions
@@ -209,7 +209,7 @@ def plot_calibration_curve(
     y_pred_calibrated: Optional[np.ndarray] = None,
     n_bins: int = 10,
     title: str = "Calibration Curve",
-    figsize: Tuple[int, int] = (8, 8),
+    figsize: Tuple[int, int] = (12, 10),
     save_path: Optional[str] = None
 ) -> plt.Figure:
     """
@@ -278,7 +278,7 @@ def plot_calibration_curve(
     ax.set_ylim([0, 1])
     ax.legend()
 
-    fig.suptitle(title, fontsize=14, fontweight='bold')
+    fig.suptitle(title, fontsize=16, fontweight='bold')
     plt.tight_layout()
 
     if save_path:
@@ -289,7 +289,7 @@ def plot_calibration_curve(
 
 def plot_drm_enrichment(
     validation_df: pd.DataFrame,
-    figsize: Tuple[int, int] = (15, 5),
+    figsize: Tuple[int, int] = (20, 7),
     save_path: Optional[str] = None
 ) -> plt.Figure:
     """
@@ -311,9 +311,9 @@ def plot_drm_enrichment(
     ax = axes[0]
     sns.boxplot(data=top20_df, x='drug_class', y='enrichment_ratio', ax=ax, palette='Set2')
     ax.axhline(y=1, color='red', linestyle='--', label='Expected by chance')
-    ax.set_xlabel('Drug Class', fontsize=12)
-    ax.set_ylabel('Enrichment Ratio', fontsize=12)
-    ax.set_title('DRM Enrichment in Top-20\nAttention Positions', fontsize=12, fontweight='bold')
+    ax.set_xlabel('Drug Class', fontsize=14)
+    ax.set_ylabel('Enrichment Ratio', fontsize=14)
+    ax.set_title('DRM Enrichment in Top-20\nAttention Positions', fontsize=14, fontweight='bold')
     ax.legend()
 
     # 2. Enrichment vs top-k
@@ -324,9 +324,9 @@ def plot_drm_enrichment(
         stds = dc_df.groupby('top_k')['enrichment_ratio'].std()
         ax.errorbar(means.index, means.values, yerr=stds.values, marker='o', label=dc, capsize=3)
     ax.axhline(y=1, color='red', linestyle='--', alpha=0.5)
-    ax.set_xlabel('Top-k Positions', fontsize=12)
-    ax.set_ylabel('Mean Enrichment Ratio', fontsize=12)
-    ax.set_title('DRM Enrichment vs\nSelection Threshold', fontsize=12, fontweight='bold')
+    ax.set_xlabel('Top-k Positions', fontsize=14)
+    ax.set_ylabel('Mean Enrichment Ratio', fontsize=14)
+    ax.set_title('DRM Enrichment vs\nSelection Threshold', fontsize=14, fontweight='bold')
     ax.legend()
 
     # 3. P-value distribution
@@ -334,9 +334,9 @@ def plot_drm_enrichment(
     p_values = top20_df['p_value'].values
     ax.hist(p_values, bins=20, edgecolor='white', alpha=0.7, color='#3498db')
     ax.axvline(x=0.05, color='red', linestyle='--', label='p=0.05')
-    ax.set_xlabel("P-value (Fisher's Exact Test)", fontsize=12)
-    ax.set_ylabel('Number of Drugs', fontsize=12)
-    ax.set_title('Statistical Significance of\nDRM Enrichment', fontsize=12, fontweight='bold')
+    ax.set_xlabel("P-value (Fisher's Exact Test)", fontsize=14)
+    ax.set_ylabel('Number of Drugs', fontsize=14)
+    ax.set_title('Statistical Significance of\nDRM Enrichment', fontsize=14, fontweight='bold')
     ax.legend()
 
     n_sig = (p_values < 0.05).sum()
@@ -355,7 +355,7 @@ def plot_drm_enrichment(
 
 def plot_model_comparison_heatmap(
     comparison_df: pd.DataFrame,
-    figsize: Tuple[int, int] = (12, 8),
+    figsize: Tuple[int, int] = (16, 10),
     save_path: Optional[str] = None
 ) -> plt.Figure:
     """
@@ -376,9 +376,9 @@ def plot_model_comparison_heatmap(
     sns.heatmap(pivot_df, annot=True, fmt='.3f', cmap='RdYlGn',
                vmin=0.85, vmax=1.0, ax=ax, cbar_kws={'label': 'AUC-ROC'})
 
-    ax.set_xlabel('Model', fontsize=12)
-    ax.set_ylabel('Drug', fontsize=12)
-    ax.set_title('Model Performance Comparison by Drug', fontsize=14, fontweight='bold')
+    ax.set_xlabel('Model', fontsize=14)
+    ax.set_ylabel('Drug', fontsize=14)
+    ax.set_title('Model Performance Comparison by Drug', fontsize=16, fontweight='bold')
 
     plt.tight_layout()
 

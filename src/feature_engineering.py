@@ -44,20 +44,13 @@ def load_esm2_model(
     Returns:
         Tuple of (model, alphabet, batch_converter, device)
     """
-    import esm
-
     if device is None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    # Load model
-    if model_name == "esm2_t33_650M_UR50D":
-        model, alphabet = esm.pretrained.esm2_t33_650M_UR50D()
-    elif model_name == "esm2_t36_3B_UR50D":
-        model, alphabet = esm.pretrained.esm2_t36_3B_UR50D()
-    elif model_name == "esm2_t12_35M_UR50D":
-        model, alphabet = esm.pretrained.esm2_t12_35M_UR50D()
-    else:
-        raise ValueError(f"Unknown model: {model_name}")
+    # Load model via torch.hub (avoids namespace conflict with EvolutionaryScale esm package)
+    model, alphabet = torch.hub.load(
+        "facebookresearch/esm:main", model_name
+    )
 
     model = model.to(device)
     model.eval()
