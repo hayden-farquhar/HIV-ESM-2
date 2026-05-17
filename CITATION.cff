@@ -1,12 +1,13 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+message: "If you use this software, please cite the associated journal article (preferred-citation) and, if applicable, the software itself."
 authors:
   - family-names: "Farquhar"
     given-names: "Hayden"
     orcid: "https://orcid.org/0009-0002-6226-440X"
+    affiliation: "Independent Researcher, Finley, NSW, Australia"
 title: "HIV Drug Resistance Prediction with ESM-2 Protein Language Model"
-version: 1.0.0
-date-released: 2026-01-26
+version: 1.0.1
+date-released: 2026-05-17
 url: "https://github.com/hayden-farquhar/HIV-ESM-2"
 repository-code: "https://github.com/hayden-farquhar/HIV-ESM-2"
 license: MIT
@@ -23,3 +24,16 @@ abstract: >-
   attention-weighted pooling approach achieves 0.968 mean AUC across
   18 antiretroviral drugs, with 2.48x enrichment for known drug resistance
   mutations in high-attention positions.
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Farquhar"
+      given-names: "Hayden"
+      orcid: "https://orcid.org/0009-0002-6226-440X"
+      affiliation: "Independent Researcher, Finley, NSW, Australia"
+  title: "Protein Language Model Embeddings Improve HIV Drug Resistance Prediction: A Comprehensive Benchmark with Attention-Based Interpretability"
+  journal: "Bioinformatics"
+  year: 2026
+  doi: "10.1093/bioinformatics/btag260"
+  publisher:
+    name: "Oxford University Press"

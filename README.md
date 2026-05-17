@@ -188,14 +188,33 @@ EFV, ETR, NVP, RPV
 
 ## Citation
 
-If you use this code, please cite:
+If you use this code, please cite the journal article:
+
+> Farquhar H. Protein Language Model Embeddings Improve HIV Drug Resistance Prediction: A Comprehensive Benchmark with Attention-Based Interpretability. *Bioinformatics*. 2026. DOI: [10.1093/bioinformatics/btag260](https://doi.org/10.1093/bioinformatics/btag260)
 
 ```bibtex
-@software{farquhar2026hiv,
-  author = {Farquhar, Hayden},
-  title = {HIV Drug Resistance Prediction with ESM-2 Protein Language Model},
-  year = {2026},
-  url = {https://github.com/hayden-farquhar/HIV-ESM-2}
+@article{farquhar2026esm2hiv,
+  author    = {Farquhar, Hayden},
+  title     = {Protein Language Model Embeddings Improve HIV Drug Resistance Prediction: A Comprehensive Benchmark with Attention-Based Interpretability},
+  journal   = {Bioinformatics},
+  year      = {2026},
+  doi       = {10.1093/bioinformatics/btag260},
+  publisher = {Oxford University Press}
+}
+```
+
+If citing the analysis code itself (for reproducibility), additionally cite the Zenodo archive:
+
+> Farquhar H. HIV Drug Resistance Prediction with ESM-2 Protein Language Model (v1.0.1). Zenodo. 2026. DOI: [10.5281/zenodo.19466629](https://doi.org/10.5281/zenodo.19466629)
+
+```bibtex
+@software{farquhar2026hivcode,
+  author    = {Farquhar, Hayden},
+  title     = {HIV Drug Resistance Prediction with ESM-2 Protein Language Model},
+  year      = {2026},
+  version   = {1.0.1},
+  doi       = {10.5281/zenodo.19466629},
+  url       = {https://github.com/hayden-farquhar/HIV-ESM-2}
 }
 ```
 

@@ -1,0 +1,42 @@
+{
+  "title": "HIV Drug Resistance Prediction with ESM-2 Protein Language Model",
+  "upload_type": "software",
+  "description": "Analysis code for: Farquhar H. <em>Protein Language Model Embeddings Improve HIV Drug Resistance Prediction: A Comprehensive Benchmark with Attention-Based Interpretability</em>. Bioinformatics (2026), DOI: <a href=\"https://doi.org/10.1093/bioinformatics/btag260\">10.1093/bioinformatics/btag260</a>.<br><br>A machine learning pipeline for predicting HIV drug resistance from protein sequences using ESM-2 protein language model embeddings. The attention-weighted pooling approach achieves 0.968 mean AUC across 18 antiretroviral drugs, with 2.48x enrichment for known drug resistance mutations in high-attention positions.<br><br>v1.0.1 is a post-publication metadata update: the journal article DOI is now declared as a related identifier (isSupplementTo) and the CITATION.cff and README direct citation traffic to the article. No code changes.",
+  "creators": [
+    {
+      "name": "Farquhar, Hayden",
+      "affiliation": "Independent Researcher, Finley, NSW, Australia",
+      "orcid": "0009-0002-6226-440X"
+    }
+  ],
+  "license": "MIT",
+  "version": "1.0.1",
+  "keywords": [
+    "HIV drug resistance",
+    "protein language models",
+    "ESM-2",
+    "antiretroviral therapy",
+    "machine learning",
+    "drug resistance mutations"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.1093/bioinformatics/btag260",
+      "relation": "isSupplementTo",
+      "resource_type": "publication-article",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.5281/zenodo.19466630",
+      "relation": "isNewVersionOf",
+      "resource_type": "software",
+      "scheme": "doi"
+    },
+    {
+      "identifier": "10.6084/m9.figshare.31958688",
+      "relation": "isSupplementedBy",
+      "resource_type": "dataset",
+      "scheme": "doi"
+    }
+  ]
+}
