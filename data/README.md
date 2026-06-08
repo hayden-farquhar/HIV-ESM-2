@@ -26,6 +26,34 @@ This directory contains data for the HIV-ESM-2 drug resistance prediction projec
 
 4. Run notebook `01_data_acquisition.ipynb` to process the data
 
+The downloaded filename is matched case-insensitively (`PI_DataSet.txt`,
+`PI_dataset.txt`, `PI_genopheno.csv`, etc.), so you do not need to rename it.
+
+## HIVDB File Format (important)
+
+The Stanford genotype-phenotype download **does not contain an amino-acid
+sequence column.** Each isolate's sequence is stored *differentially* across
+per-residue position columns named `P1, P2, ... Pn` (99 for protease, ~240–318
+for reverse transcriptase), alongside `SeqID`, the bare drug fold-change columns,
+and `CompMutList`. Each position column encodes:
+
+| Cell value      | Meaning                                             |
+|-----------------|-----------------------------------------------------|
+| `-` / `.` / blank | residue matches the HXB2 consensus (wild-type)    |
+| a single letter | amino-acid substitution at that position            |
+| several letters | a mixture (the first listed residue is used)        |
+| `~`             | deletion (position skipped)                         |
+| `#`             | insertion (position skipped)                        |
+| `X`             | ambiguous residue (sequence dropped in QC)          |
+
+The full-length protein is **reconstructed** by overlaying these position
+columns onto the HXB2 reference (`reconstruct_sequences()` in
+`src/data_processing.py`), then written to FASTA. Drug labels are derived from
+the bare fold-change columns via `build_phenotypes()` using a fold-change
+cutoff of ≥ 3.0 for the binary (`class2`) resistance label. If you see a
+sequence count of zero, it means an older parser was looking for a non-existent
+sequence column rather than reconstructing from `P1…Pn`.
+
 ## Directory Structure
 
 After running the pipeline, this directory will contain:
