@@ -30,6 +30,11 @@ HIV_RT_REFERENCE = (
 )
 
 
+def clean_sequence(sequence: str) -> str:
+    """Keep letters only (drops stop codons '*' and gap characters), as in the published analysis."""
+    return ''.join(c for c in sequence if c.isalpha())
+
+
 def load_esm2_model(
     model_name: str = "esm2_t33_650M_UR50D",
     device: Optional[torch.device] = None
@@ -87,7 +92,7 @@ def extract_embeddings(
     all_embeddings = []
 
     for i in tqdm(range(0, len(sequences), batch_size), desc="Extracting embeddings"):
-        batch_seqs = sequences[i:i + batch_size]
+        batch_seqs = [clean_sequence(s) for s in sequences[i:i + batch_size]]
         batch_data = [(f"seq_{j}", seq) for j, seq in enumerate(batch_seqs)]
 
         _, _, batch_tokens = batch_converter(batch_data)
@@ -131,7 +136,7 @@ def extract_attention_weights(
         - position_attention: (seq_len,) averaged attention per position
     """
     batch_converter = alphabet.get_batch_converter()
-    data = [("seq", sequence)]
+    data = [("seq", clean_sequence(sequence))]
     _, _, tokens = batch_converter(data)
     tokens = tokens.to(device)
 
@@ -326,7 +331,7 @@ def batch_extract_pooled_embeddings(
     all_pooled = []
 
     for i in tqdm(range(0, len(sequences), batch_size), desc=f"Extracting {pooling_method} embeddings"):
-        batch_seqs = sequences[i:i + batch_size]
+        batch_seqs = [clean_sequence(s) for s in sequences[i:i + batch_size]]
         batch_data = [(f"seq_{j}", seq) for j, seq in enumerate(batch_seqs)]
 
         _, _, batch_tokens = batch_converter(batch_data)
@@ -376,7 +381,7 @@ def batch_extract_per_residue_embeddings(
     all_embeddings = []
 
     for i in tqdm(range(0, len(sequences), batch_size), desc="Extracting per-residue embeddings"):
-        batch_seqs = sequences[i:i + batch_size]
+        batch_seqs = [clean_sequence(s) for s in sequences[i:i + batch_size]]
         batch_data = [(f"seq_{j}", seq) for j, seq in enumerate(batch_seqs)]
 
         _, _, batch_tokens = batch_converter(batch_data)

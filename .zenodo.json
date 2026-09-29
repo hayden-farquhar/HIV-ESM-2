@@ -1,7 +1,7 @@
 {
   "title": "HIV Drug Resistance Prediction with ESM-2 Protein Language Model",
   "upload_type": "software",
-  "description": "Analysis code for: Farquhar H. <em>Protein Language Model Embeddings Improve HIV Drug Resistance Prediction: A Comprehensive Benchmark with Attention-Based Interpretability</em>. Bioinformatics (2026), DOI: <a href=\"https://doi.org/10.1093/bioinformatics/btag260\">10.1093/bioinformatics/btag260</a>.<br><br>A machine learning pipeline for predicting HIV drug resistance from protein sequences using ESM-2 protein language model embeddings. The attention-weighted pooling approach achieves 0.968 mean AUC across 18 antiretroviral drugs, with 2.48x enrichment for known drug resistance mutations in high-attention positions.<br><br>v1.0.2 fixes the data-acquisition step: HIV-1 sequences are now reconstructed correctly from the Stanford HIVDB genotype-phenotype position columns (P1..Pn) relative to the HXB2 reference. The previously published notebook searched for a non-existent amino-acid sequence column and produced zero sequences on the current HIVDB download. Published analysis results and figures are unaffected (the original analysis used the correct reconstruction). Reported by an external user reproducing the pipeline.",
+  "description": "Analysis code for: Farquhar H. <em>Protein Language Model Embeddings Improve HIV Drug Resistance Prediction: A Comprehensive Benchmark with Attention-Based Interpretability</em>. Bioinformatics (2026), DOI: <a href=\"https://doi.org/10.1093/bioinformatics/btag260\">10.1093/bioinformatics/btag260</a>.<br><br>A machine learning pipeline for predicting HIV drug resistance from protein sequences using ESM-2 protein language model embeddings. The attention-weighted pooling approach achieves 0.968 mean AUC across 18 antiretroviral drugs, with 2.48x enrichment for known drug resistance mutations in high-attention positions.<br><br>v1.0.3 makes the data-acquisition notebook reproduce the published dataset exactly. (1) All 6,308 isolates are retained (2,171 PI, 1,867 NRTI, 2,270 NNRTI); v1.0.2 dropped isolates containing ambiguous residues, leaving 5,838. (2) Sequence reconstruction now follows the rules of the original analysis (insertion markers keep the reference residue, stop codons are retained and stripped before ESM-2 tokenisation, RT consensus positions are filled from the first 240 residues of HXB2 RT). (3) Isolates not tested against a drug are labelled missing rather than susceptible; v1.0.2 labelled them susceptible, inflating the negative class. Reconstructed sequences and binary labels were verified identical to the original analysis pipeline for all 6,308 isolates and 18 drugs. Published analysis results and figures are unaffected (they were produced by the original pipeline).",
   "creators": [
     {
       "name": "Farquhar, Hayden",
@@ -10,7 +10,7 @@
     }
   ],
   "license": "MIT",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "keywords": [
     "HIV drug resistance",
     "protein language models",
@@ -27,7 +27,7 @@
       "scheme": "doi"
     },
     {
-      "identifier": "10.5281/zenodo.19466630",
+      "identifier": "10.5281/zenodo.20592324",
       "relation": "isNewVersionOf",
       "resource_type": "software",
       "scheme": "doi"

@@ -205,14 +205,14 @@ If you use this code, please cite the journal article:
 
 If citing the analysis code itself (for reproducibility), additionally cite the Zenodo archive:
 
-> Farquhar H. HIV Drug Resistance Prediction with ESM-2 Protein Language Model (v1.0.1). Zenodo. 2026. DOI: [10.5281/zenodo.19466629](https://doi.org/10.5281/zenodo.19466629)
+> Farquhar H. HIV Drug Resistance Prediction with ESM-2 Protein Language Model (v1.0.3). Zenodo. 2026. DOI: [10.5281/zenodo.19466629](https://doi.org/10.5281/zenodo.19466629)
 
 ```bibtex
 @software{farquhar2026hivcode,
   author    = {Farquhar, Hayden},
   title     = {HIV Drug Resistance Prediction with ESM-2 Protein Language Model},
   year      = {2026},
-  version   = {1.0.1},
+  version   = {1.0.3},
   doi       = {10.5281/zenodo.19466629},
   url       = {https://github.com/hayden-farquhar/HIV-ESM-2}
 }

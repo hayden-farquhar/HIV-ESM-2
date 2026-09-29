@@ -37,22 +37,40 @@ per-residue position columns named `P1, P2, ... Pn` (99 for protease, ~240–318
 for reverse transcriptase), alongside `SeqID`, the bare drug fold-change columns,
 and `CompMutList`. Each position column encodes:
 
-| Cell value      | Meaning                                             |
-|-----------------|-----------------------------------------------------|
-| `-` / `.` / blank | residue matches the HXB2 consensus (wild-type)    |
-| a single letter | amino-acid substitution at that position            |
-| several letters | a mixture (the first listed residue is used)        |
-| `~`             | deletion (position skipped)                         |
-| `#`             | insertion (position skipped)                        |
-| `X`             | ambiguous residue (sequence dropped in QC)          |
+| Cell value        | Meaning / handling                                        |
+|-------------------|-----------------------------------------------------------|
+| `-`               | matches the HXB2 consensus (filled from the reference)    |
+| `.`               | no sequence at this position (filled from the reference, as in the published analysis) |
+| a single letter   | amino-acid substitution at that position                  |
+| several letters   | a mixture (the first listed residue is used)              |
+| `~`               | deletion (position skipped)                               |
+| `#`               | insertion (reference residue kept at that position)       |
+| `*`               | stop codon (kept in the FASTA; stripped before ESM-2)     |
+| `X`               | ambiguous residue (kept; ESM-2 has an `X` token)          |
+
+Reverse-transcriptase consensus positions are filled from the first 240
+residues of HXB2 RT, so uncalled positions beyond 240 in the NNRTI file
+(`P241`-`P318`) become `X`. This matches the published analysis.
 
 The full-length protein is **reconstructed** by overlaying these position
 columns onto the HXB2 reference (`reconstruct_sequences()` in
-`src/data_processing.py`), then written to FASTA. Drug labels are derived from
-the bare fold-change columns via `build_phenotypes()` using a fold-change
-cutoff of ≥ 3.0 for the binary (`class2`) resistance label. If you see a
-sequence count of zero, it means an older parser was looking for a non-existent
-sequence column rather than reconstructing from `P1…Pn`.
+`src/data_processing.py`), then written to FASTA. Drug labels are derived
+from the bare fold-change columns via `build_phenotypes()` using a fold-change
+cutoff of >= 3.0 for the binary (`class2`) resistance label. Isolates that were
+not tested against a drug have a missing (`NaN`) label for that drug and are
+excluded when that drug's classifier is trained.
+
+### Expected output and troubleshooting
+
+Notebook 01 should report 2,171 PI, 1,867 NRTI and 2,270 NNRTI sequences
+(6,308 total), with lengths of 99, 240 and 318 aa (isolates with a deletion are
+slightly shorter). No isolates are filtered out.
+
+- **Zero sequences / no FASTA files:** you are running code older than v1.0.2,
+  which looked for a non-existent sequence column. Update to the latest release.
+- **5,838 sequences instead of 6,308:** you are running v1.0.2, which removed
+  isolates containing ambiguous residues and labelled untested isolates as
+  susceptible. Update to v1.0.3 or later.
 
 ## Directory Structure
 
@@ -104,8 +122,8 @@ The comparison pipeline is implemented in `src/plm_comparison.py`.
 | Drug Class | Sequences | Drugs | Avg Length |
 |------------|-----------|-------|------------|
 | PI | 2,171 | 8 | 99 aa |
-| NRTI | 1,867 | 6 | ~240 aa |
-| NNRTI | 2,270 | 4 | ~240 aa |
+| NRTI | 1,867 | 6 | 240 aa |
+| NNRTI | 2,270 | 4 | 318 aa |
 | **Total** | **6,308** | **18** | - |
 
 ## Drug Distribution
@@ -169,7 +187,7 @@ Our models use `class2` (binary) labels.
 ## Reference Sequences
 
 - **HIV-1 Protease**: 99 amino acids (HXB2 reference)
-- **HIV-1 Reverse Transcriptase**: 560 amino acids (active site region ~240 aa)
+- **HIV-1 Reverse Transcriptase**: 560 amino acids (the first 240 are used to fill consensus positions)
 
 ## Citation
 

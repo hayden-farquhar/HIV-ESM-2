@@ -30,13 +30,23 @@ ALL_DRUGS = PI_DRUGS + NRTI_DRUGS + NNRTI_DRUGS
 # sequence column. Each isolate's sequence is stored *differentially* across
 # position columns named P1, P2, ... Pn (one per residue of the target
 # protein), where:
-#   '-' / '.' / blank  -> residue matches the HXB2 consensus (wild-type)
+#   '-' / '.' / blank  -> filled from the HXB2 reference
 #   single letter      -> amino-acid substitution at that position
 #   several letters    -> a mixture (we take the first listed residue)
 #   '~'                -> deletion (position skipped)
-#   '#'                -> insertion (position skipped)
+#   '#'                -> insertion (reference residue kept at that position)
+#   '*'                -> stop codon (kept; non-letters are stripped before
+#                         ESM-2 tokenisation)
 # The full protein is reconstructed by overlaying these columns onto the HXB2
 # reference. CompMutList is a human-readable summary of the same mutations.
+#
+# These rules reproduce the reconstruction used for the published analysis.
+# Two consequences worth knowing:
+#   * RT consensus positions are filled from the first 240 residues of HXB2 RT
+#     only (RT_REFERENCE_LENGTH), so uncalled positions beyond 240 in the
+#     NNRTI dataset (P241-P318) become 'X'.
+#   * HIVDB uses '.' for "no sequence at this position"; the published
+#     analysis filled these from the reference, as below.
 
 # HXB2 reference sequences (UniProt/HXB2 numbering) used for reconstruction.
 HXB2_PROTEASE = (
@@ -55,7 +65,10 @@ HXB2_RT = (
     "PLVKLWYQLEKEPIVGAETFYVDGAANRETKLGKAGYVTNRGRQKVVTLTDTTNQKTELQ"
     "AIYLALQDSGLEVNIVTDSQYALGIIQAQPDQSESELVNQIIEQLIKKEKVYLAWVPAHK"
     "GIGGNEQVDKLVSAGIRKVLFLDGIDKAQEEHEKYHSNWRAMASDFNLPPVVAKEIVASC"
-)  # >= 318 aa (covers all RT position columns in the NRTI/NNRTI datasets)
+)  # full-length HXB2 RT
+
+# Reference length used to fill RT consensus positions in the published analysis.
+RT_REFERENCE_LENGTH = 240
 
 # Fold-change resistance cutoffs used in this study (Stanford HIVDB convention).
 FC_RESISTANT = 3.0   # class2: fold-change >= 3.0 -> resistant
@@ -90,19 +103,22 @@ def reconstruct_sequence(
     """
     residues = []
     for i, col in enumerate(position_cols):
+        ref_aa = reference[i] if i < len(reference) else 'X'
         aa = row[col]
         if pd.isna(aa):
-            residues.append(reference[i] if i < len(reference) else 'X')
+            residues.append(ref_aa)
             continue
-        aa = str(aa).strip()
-        if aa in _GAP_CHARS:
-            residues.append(reference[i] if i < len(reference) else 'X')
-        elif aa in _DELETION_CHARS or aa in _INSERTION_CHARS:
-            continue  # deletion / insertion: drop the position
+        aa = str(aa)
+        if aa in _GAP_CHARS or aa in _INSERTION_CHARS:
+            residues.append(ref_aa)
+        elif aa in _DELETION_CHARS:
+            continue  # deletion: drop the position
+        elif aa == '*':
+            residues.append('*')  # stop codon
         elif aa[0].isalpha():
             residues.append(aa[0].upper())  # substitution or mixture (first residue)
         else:
-            residues.append(reference[i] if i < len(reference) else 'X')
+            residues.append(ref_aa)
     return ''.join(residues)
 
 
@@ -129,7 +145,7 @@ def reconstruct_sequences(
             "single amino-acid column."
         )
 
-    reference = HXB2_PROTEASE if gene == 'PR' else HXB2_RT
+    reference = HXB2_PROTEASE if gene == 'PR' else HXB2_RT[:RT_REFERENCE_LENGTH]
     sequences = [
         reconstruct_sequence(row, position_cols, reference)
         for _, row in df.iterrows()
@@ -143,6 +159,8 @@ def classify_fold_change(fold_change, threshold: float = FC_RESISTANT) -> float:
         fc = float(fold_change)
     except (ValueError, TypeError):
         return np.nan
+    if np.isnan(fc):
+        return np.nan  # drug not tested for this isolate
     return 1.0 if fc >= threshold else 0.0
 
 
@@ -152,6 +170,8 @@ def classify_fold_change_3class(fold_change) -> float:
         fc = float(fold_change)
     except (ValueError, TypeError):
         return np.nan
+    if np.isnan(fc):
+        return np.nan  # drug not tested for this isolate
     if fc < FC_RESISTANT:
         return 0.0
     elif fc < FC_HIGH:
@@ -321,24 +341,29 @@ def extract_resistance_labels(
         resistance_col: Column suffix to use ('class2', 'class3', or 'FC')
 
     Returns:
-        Binary labels array (0 = susceptible, 1 = resistant)
+        Float labels array (0 = susceptible, 1 = resistant, NaN = not tested)
     """
     col_name = f"{drug}_{resistance_col}"
 
     if col_name not in phenotypes.columns:
         raise ValueError(f"Column {col_name} not found in phenotypes")
 
-    labels = phenotypes[col_name].values.copy()
+    values = phenotypes[col_name].to_numpy(dtype=float)
+    untested = np.isnan(values)
 
     # Handle class3 by binarizing (intermediate -> resistant)
     if resistance_col == 'class3':
-        labels = (labels >= 1).astype(int)
+        labels = (values >= 1).astype(float)
     elif resistance_col == 'class2':
-        labels = labels.astype(int)
+        labels = values.copy()
     elif resistance_col == 'FC':
         # Convert fold-change to binary using the study cutoff (FC >= 3.0)
-        labels = (labels >= FC_RESISTANT).astype(int)
+        labels = (values >= FC_RESISTANT).astype(float)
+    else:
+        labels = values.copy()
 
+    # Isolates not tested against this drug stay NaN (drop them before training)
+    labels[untested] = np.nan
     return labels
 
 
